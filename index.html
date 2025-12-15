@@ -1,126 +1,140 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-  <title>Gioco del Triangolo</title>
+    <!-- 🔥 COSA NUOVA 1: viewport (fondamentale per mobile) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
+    <title>Gioco del Triangolo</title>
 
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    <!-- 🔥 CSS COMPLETO -->
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-      text-size-adjust: 100%;
-    }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
 
-    h1 {
-      font-size: clamp(22px, 6vw, 36px);
-      margin-bottom: 6px;
-    }
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
 
-    p {
-      font-size: clamp(14px, 4vw, 20px);
-      margin: 3px;
-    }
+            -webkit-text-size-adjust: 100%;
+        }
 
-    canvas {
-      background: #222;
-      margin-top: 12px;
-      cursor: pointer;
-      max-width: 90vw;
-      max-height: 90vw;
-      touch-action: manipulation;
-    }
-  </style>
+        h1 {
+            font-size: clamp(24px, 6vw, 40px);
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            font-size: clamp(14px, 4vw, 20px);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        /* 🔥 COSA NUOVA 2: canvas responsivo */
+        canvas {
+            width: 90vw;
+            max-width: 420px;
+            aspect-ratio: 1 / 1;
+            background: #222;
+            border-radius: 12px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+    </style>
 </head>
 
 <body>
 
-<h1>🔺 Gioco del Triangolo</h1>
-<p>Punteggio: <span id="score">0</span></p>
-<p>Rinascite: <span id="rebirths">0</span></p>
-<p>Velocità: <span id="speed">1</span>x</p>
+    <h1>🔺 Gioco del Triangolo</h1>
 
-<canvas id="gameCanvas"></canvas>
+    <div class="stats">
+        Punteggio: <span id="score">0</span><br>
+        Rinascite: <span id="rebirths">0</span><br>
+        Velocità: <span id="speed">1</span>x
+    </div>
 
-<script>
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-  let size = 40;
-  let score = 0;
-  let rebirths = 0;
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-  let speed = 1;
-  let autoGrow = 0.02;
+        let size = 40;
+        let score = 0;
+        let rebirths = 0;
 
-  function drawTriangle() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let speed = 1;
+        let autoGrow = 0.02;
 
-    ctx.fillStyle = "cyan";
-    ctx.beginPath();
-    ctx.moveTo(200, 200 - size);
-    ctx.lineTo(200 - size, 200 + size);
-    ctx.lineTo(200 + size, 200 + size);
-    ctx.closePath();
-    ctx.fill();
-  }
+        function drawTriangle() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  function isClickInsideTriangle(x, y) {
-    return (
-      x > 200 - size &&
-      x < 200 + size &&
-      y > 200 - size &&
-      y < 200 + size
-    );
-  }
+            ctx.fillStyle = "cyan";
+            ctx.beginPath();
+            ctx.moveTo(200, 200 - size);
+            ctx.lineTo(200 - size, 200 + size);
+            ctx.lineTo(200 + size, 200 + size);
+            ctx.closePath();
+            ctx.fill();
+        }
 
-  function rebirth() {
-    rebirths++;
-    size = 40;
-    speed += 0.5;
-    autoGrow += 0.01;
+        function isClickInsideTriangle(x, y) {
+            return (
+                x > 200 - size &&
+                x < 200 + size &&
+                y > 200 - size &&
+                y < 200 + size
+            );
+        }
 
-    document.getElementById("rebirths").textContent = rebirths;
-    document.getElementById("speed").textContent = speed.toFixed(1);
-  }
+        function rebirth() {
+            rebirths++;
+            size = 40;
+            speed += 0.5;
+            autoGrow += 0.01;
 
-  canvas.addEventListener("click", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+            document.getElementById("rebirths").textContent = rebirths;
+            document.getElementById("speed").textContent = speed.toFixed(1);
+        }
 
-    if (isClickInsideTriangle(x, y)) {
-      score++;
-      size += 1 * speed;
+        canvas.addEventListener("click", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
-      if (score % 100 === 0) rebirth();
+            if (isClickInsideTriangle(x, y)) {
+                score++;
+                size += 1 * speed;
 
-      document.getElementById("score").textContent = score;
-      drawTriangle();
-    }
-  });
+                if (score % 100 === 0) {
+                    rebirth();
+                }
 
-  function gameLoop() {
-    size += autoGrow * speed;
-    drawTriangle();
-    requestAnimationFrame(gameLoop);
-  }
+                document.getElementById("score").textContent = score;
+                drawTriangle();
+            }
+        });
 
-  drawTriangle();
-  gameLoop();
-</script>
+        function gameLoop() {
+            size += autoGrow * speed;
+            drawTriangle();
+            requestAnimationFrame(gameLoop);
+        }
+
+        drawTriangle();
+        gameLoop();
+    </script>
 
 </body>
 </html>
