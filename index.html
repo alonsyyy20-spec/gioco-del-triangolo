@@ -1,159 +1,105 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html><html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Gioco 🔺</title>
-
 <style>
-body{
-  margin:0;
-  background:#111;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  overflow:hidden;
-}
-
-#stats{
-  margin-top:10px;
-}
-
-#game{
-  margin:20px auto;
-  width:260px;
-  height:260px;
-  background:#222;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-#triangle{
-  width:0;
-  height:0;
-  border-left:60px solid transparent;
-  border-right:60px solid transparent;
-  border-bottom:100px solid cyan;
-  transition:transform 0.1s;
-}
-
-button{
-  margin:5px;
-  padding:8px 12px;
-  border:none;
-  border-radius:8px;
-  background:#333;
-  color:white;
-  font-size:14px;
-}
-
-.menu{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:#222;
-  padding:15px;
-  border-radius:12px;
-  display:none;
-  width:260px;
-}
+*{box-sizing:border-box;touch-action:manipulation}
+body{margin:0;background:#111;color:#fff;font-family:Arial}
+#game{display:flex;align-items:center;justify-content:center;height:100vh;gap:16px}
+.panel{background:#222;padding:12px;border-radius:10px;width:200px}
+button{width:100%;margin-top:6px;padding:8px;border-radius:6px;border:none;font-size:14px}
+#character{width:160px;height:160px;position:relative;cursor:pointer}
+.shape{position:absolute;inset:0;display:none}
+#triangle{width:0;height:0;margin:auto;border-left:80px solid transparent;border-right:80px solid transparent;border-bottom:160px solid cyan}
+#square{background:cyan}
+#circle{background:cyan;border-radius:50%}
+#pentagon{background:cyan;clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%)}
+#hexagon{background:cyan;clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center}
+.box{background:#222;padding:16px;border-radius:12px;width:280px}
 </style>
 </head>
-
 <body>
-
-<div id="stats">
-  <div>Punteggio: <span id="score">0</span></div>
-  <div>Rinascite: <span id="rebirths">0</span></div>
-  <div>Monete: <span id="coins">0</span></div>
-  <div>Obiettivo: <span id="goal">50</span></div>
-</div>
-
 <div id="game">
-  <div id="triangle"></div>
-</div>
+  <div class="panel">
+    <h3>📊 Stato</h3>
+    ⭐ Punteggio: <span id="score">0</span><br>
+    💰 Soldi: <span id="money">0</span><br>
+    🔁 Rinascite: <span id="rebirths">0</span><br>
+    🎯 Prossima rinascita: <span id="target">50</span>
+    <button onclick="openShop()">🛒 Shop</button>
+    <button onclick="openCustomize()">🎨 Customize</button>
+    <button onclick="openSpecial()">⭐ Menu speciale</button>
+  </div>  <div id="character">
+    <div id="triangle" class="shape"></div>
+    <div id="square" class="shape"></div>
+    <div id="circle" class="shape"></div>
+    <div id="pentagon" class="shape"></div>
+    <div id="hexagon" class="shape"></div>
+  </div>
+</div><!-- SHOP --><div id="shop" class="overlay">
+  <div class="box">
+    <h3>🛒 Shop</h3>
+    <button onclick="buyClick()">+1 punto per click (10💰)</button>
+    <button onclick="closeShop()">Chiudi</button>
+  </div>
+</div><!-- CUSTOMIZE --><div id="customize" class="overlay">
+  <div class="box">
+    <h3>🎨 Customize</h3>
+    <button onclick="setShape('triangle')">Triangolo</button>
+    <button onclick="setShape('square')">Quadrato</button>
+    <button onclick="setShape('circle')">Cerchio</button>
+    <button onclick="closeCustomize()">Chiudi</button>
+  </div>
+</div><!-- MENU SPECIALE --><div id="special" class="overlay">
+  <div class="box">
+    <h3>⭐ Menu speciale</h3>
+    <div id="locked">🔒 Serve 5 rinascite</div>
+    <div id="unlocked" style="display:none">
+      <button onclick="setShape('pentagon')">Pentagono</button>
+      <button onclick="setShape('hexagon')">Esagono</button>
+      <button onclick="setBg('#0d47a1')">Sfondo blu</button>
+    </div>
+    <button onclick="closeSpecial()">Chiudi</button>
+  </div>
+</div><script>
+let score=0,money=0,rebirths=0,clickPower=1,target=50;
+setShape('triangle');
 
-<button onclick="openShop()">🛒 Shop</button>
-<button onclick="openCustomize()">🎨 Customize</button>
-
-<!-- SHOP -->
-<div class="menu" id="shop">
-<h3>🛒 Shop</h3>
-<button onclick="buyDouble()">+1 punto (50💰)</button><br><br>
-<button onclick="closeShop()">Chiudi</button>
-</div>
-
-<!-- CUSTOMIZE -->
-<div class="menu" id="custom">
-<h3>🎨 Customize</h3>
-<button onclick="setColor('cyan')">Cyan</button>
-<button onclick="setColor('red')">Rosso</button>
-<button onclick="setColor('lime')">Verde</button><br><br>
-<button onclick="closeCustomize()">Chiudi</button>
-</div>
-
-<script>
-let score=0;
-let rebirths=0;
-let coins=0;
-let goal=50;
-let power=1;
-let scale=1;
-
-const triangle=document.getElementById("triangle");
-
-triangle.onclick=()=>{
-  score+=power;
-  coins=Math.min(500, coins+1);
-
-  scale+=0.02;
-  triangle.style.transform=`scale(${scale})`;
-
-  if(score>=goal){
-    rebirths++;
-    score=0;
-    scale=1;
-    triangle.style.transform="scale(1)";
-
-    goal=Math.min(1000, goal*2);
-  }
-
-  update();
-};
+document.getElementById('character').addEventListener('pointerdown',e=>{
+ e.preventDefault();
+ score+=clickPower;
+ money+=1;
+ if(score>=target && rebirths<1000){
+   rebirths++;
+   score=0;
+   target=Math.min(target*2,1000);
+ }
+ update();
+});
 
 function update(){
-  scoreEl.innerText=score;
-  rebirthsEl.innerText=rebirths;
-  coinsEl.innerText=coins;
-  goalEl.innerText=goal;
+ scoreEl.textContent=score;
+ moneyEl.textContent=money;
+ rebirthsEl.textContent=rebirths;
+ targetEl.textContent=target;
 }
+const scoreEl=document.getElementById('score');
+const moneyEl=document.getElementById('money');
+const rebirthsEl=document.getElementById('rebirths');
+const targetEl=document.getElementById('target');
 
-const scoreEl=document.getElementById("score");
-const rebirthsEl=document.getElementById("rebirths");
-const coinsEl=document.getElementById("coins");
-const goalEl=document.getElementById("goal");
+function buyClick(){if(money>=10){money-=10;clickPower++;update();}}
 
-function openShop(){ shop.style.display="block"; }
-function closeShop(){ shop.style.display="none"; }
+function setShape(id){document.querySelectorAll('.shape').forEach(s=>s.style.display='none');document.getElementById(id).style.display='block'}
+function setBg(c){document.body.style.background=c}
 
-function buyDouble(){
-  if(coins>=50){
-    coins-=50;
-    power++;
-    update();
-  }
-}
-
-function openCustomize(){ custom.style.display="block"; }
-function closeCustomize(){ custom.style.display="none"; }
-
-function setColor(c){
-  triangle.style.borderBottomColor=c;
-}
-</script>
-
-</body>
+function openShop(){shop.style.display='flex'}
+function closeShop(){shop.style.display='none'}
+function openCustomize(){customize.style.display='flex'}
+function closeCustomize(){customize.style.display='none'}
+function openSpecial(){special.style.display='flex';if(rebirths>=5){locked.style.display='none';unlocked.style.display='block'}}
+function closeSpecial(){special.style.display='none'}
+</script></body>
 </html>
