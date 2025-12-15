@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- BLOCCA ZOOM SU MOBILE / IPAD -->
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
@@ -30,36 +29,40 @@ html, body {
   gap: 30px;
 }
 
-/* SHOP A SINISTRA */
+/* SHOP */
 #shop {
   background: #222;
   padding: 15px;
   border-radius: 10px;
-  width: 180px;
-}
-
-#shop h3 {
-  margin-top: 0;
+  width: 200px;
 }
 
 #shop button {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 8px;
-  font-size: 14px;
   border-radius: 6px;
   border: none;
 }
 
 /* TRIANGOLO */
 #triangle {
+  position: relative;
   width: 0;
   height: 0;
   border-left: 60px solid transparent;
   border-right: 60px solid transparent;
   border-bottom: 120px solid cyan;
-  user-select: none;
-  -webkit-user-select: none;
+}
+
+/* FACCIA */
+#face {
+  position: absolute;
+  top: 45px;
+  left: -20px;
+  font-size: 28px;
+  display: none;
+  pointer-events: none;
 }
 
 /* INFO */
@@ -82,14 +85,26 @@ html, body {
   <!-- SHOP -->
   <div id="shop">
     <h3>🛒 Shop</h3>
-    <p>💰 Soldi: <span id="money">0</span></p>
+    <p>💰 Soldi: <span id="money">0 / 500</span></p>
 
     <button onclick="buyCoins()">+1 moneta / click (10💰)</button>
     <button onclick="buyPoints()">+1 punto / click (20💰)</button>
+
+    <hr>
+
+    <button id="unlockBtn" onclick="unlockUpgrades()" disabled>
+      🔒 Sblocca upgrade (10 rinascite)
+    </button>
+
+    <button id="faceBtn" onclick="buyFace()" disabled>
+      😀 Metti faccia (100💰)
+    </button>
   </div>
 
   <!-- TRIANGOLO -->
-  <div id="triangle"></div>
+  <div id="triangle">
+    <div id="face">😀</div>
+  </div>
 
 </div>
 
@@ -102,19 +117,24 @@ html, body {
 </div>
 
 <script>
-/* STATO GIOCO */
+/* STATO */
 let size = 120;
 let points = 0;
 let rebirths = 0;
 let speed = 1;
-
 let rebirthGoal = 50;
 
 let money = 0;
+let maxMoney = 500;
+
 let coinsPerClick = 1;
 let pointsPerClick = 1;
 
+let upgradesUnlocked = false;
+let faceUnlocked = false;
+
 const triangle = document.getElementById("triangle");
+const face = document.getElementById("face");
 
 const colors = ["cyan", "yellow", "lime", "red", "orange", "pink", "violet"];
 
@@ -126,7 +146,7 @@ function updateTriangle() {
     size + "px solid " + colors[Math.floor(Math.random() * colors.length)];
 }
 
-/* CLICK / TOUCH */
+/* CLICK */
 triangle.addEventListener("touchstart", clickTriangle);
 triangle.addEventListener("click", clickTriangle);
 
@@ -134,27 +154,27 @@ function clickTriangle(e) {
   e.preventDefault();
 
   points += pointsPerClick;
-  money += coinsPerClick;
+
+  if (money < maxMoney) {
+    money += coinsPerClick;
+    if (money > maxMoney) money = maxMoney;
+  }
 
   size += speed;
-
   updateTriangle();
 
-  if (points >= rebirthGoal) {
-    rebirth();
-  }
+  if (points >= rebirthGoal) rebirth();
 
   updateUI();
 }
 
-/* RINASCITA (PIÙ DIFFICILE OGNI VOLTA) */
+/* RINASCITA */
 function rebirth() {
   points = 0;
   size = 120;
   rebirths++;
-
   speed += 0.5;
-  rebirthGoal *= 2; // DIFFICOLTÀ CHE AUMENTA
+  rebirthGoal *= 2;
 }
 
 /* SHOP */
@@ -162,7 +182,6 @@ function buyCoins() {
   if (money >= 10) {
     money -= 10;
     coinsPerClick++;
-    updateUI();
   }
 }
 
@@ -170,7 +189,20 @@ function buyPoints() {
   if (money >= 20) {
     money -= 20;
     pointsPerClick++;
-    updateUI();
+  }
+}
+
+function unlockUpgrades() {
+  if (rebirths >= 10) {
+    upgradesUnlocked = true;
+  }
+}
+
+function buyFace() {
+  if (money >= 100 && upgradesUnlocked) {
+    money -= 100;
+    faceUnlocked = true;
+    face.style.display = "block";
   }
 }
 
@@ -179,8 +211,11 @@ function updateUI() {
   document.getElementById("points").textContent = points;
   document.getElementById("rebirths").textContent = rebirths;
   document.getElementById("speed").textContent = speed.toFixed(1);
-  document.getElementById("money").textContent = money;
   document.getElementById("goal").textContent = rebirthGoal;
+  document.getElementById("money").textContent = money + " / " + maxMoney;
+
+  document.getElementById("unlockBtn").disabled = rebirths < 10;
+  document.getElementById("faceBtn").disabled = !upgradesUnlocked;
 }
 
 /* START */
