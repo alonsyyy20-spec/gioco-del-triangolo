@@ -15,21 +15,9 @@ body{
   overflow:hidden;
 }
 
-#top{
+#stats{
   margin-top:10px;
 }
-
-button{
-  padding:8px 12px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:#333;
-  color:white;
-  font-size:14px;
-}
-
-button:hover{ background:#555; }
 
 #game{
   margin:20px auto;
@@ -42,7 +30,24 @@ button:hover{ background:#555; }
   justify-content:center;
 }
 
-svg{ overflow:visible; }
+#triangle{
+  width:0;
+  height:0;
+  border-left:60px solid transparent;
+  border-right:60px solid transparent;
+  border-bottom:100px solid cyan;
+  transition:transform 0.1s;
+}
+
+button{
+  margin:5px;
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  background:#333;
+  color:white;
+  font-size:14px;
+}
 
 .menu{
   position:fixed;
@@ -55,108 +60,98 @@ svg{ overflow:visible; }
   display:none;
   width:260px;
 }
-
-.menu h3{
-  margin-top:0;
-}
 </style>
 </head>
 
 <body>
 
-<div id="top">
+<div id="stats">
   <div>Punteggio: <span id="score">0</span></div>
   <div>Rinascite: <span id="rebirths">0</span></div>
+  <div>Monete: <span id="coins">0</span></div>
+  <div>Obiettivo: <span id="goal">50</span></div>
 </div>
 
 <div id="game">
-<svg width="200" height="200" viewBox="0 0 200 200" id="shape" onclick="clickTriangle()">
-
-  <!-- TRIANGOLO -->
-  <polygon id="triangle" points="100,30 30,170 170,170" fill="#00ffd5"/>
-
-  <!-- VESTITI -->
-  <rect id="shirt" x="70" y="110" width="60" height="40" fill="#ff5555" rx="8" display="none"/>
-  <rect id="vest" x="70" y="105" width="60" height="50" fill="#4444ff" rx="8" display="none"/>
-
-  <!-- OCCHIALI -->
-  <rect id="glasses1" x="70" y="80" width="20" height="10" fill="black" display="none"/>
-  <rect id="glasses2" x="110" y="80" width="20" height="10" fill="black" display="none"/>
-  <line id="bridge" x1="90" y1="85" x2="110" y2="85" stroke="black" stroke-width="3" display="none"/>
-
-  <!-- CAPPELLI -->
-  <rect id="cap" x="60" y="40" width="80" height="20" fill="#ffaa00" display="none"/>
-  <rect id="topHat" x="75" y="10" width="50" height="40" fill="black" display="none"/>
-
-</svg>
+  <div id="triangle"></div>
 </div>
 
+<button onclick="openShop()">🛒 Shop</button>
 <button onclick="openCustomize()">🎨 Customize</button>
 
-<!-- MENU CUSTOMIZE -->
-<div class="menu" id="customizeMenu">
+<!-- SHOP -->
+<div class="menu" id="shop">
+<h3>🛒 Shop</h3>
+<button onclick="buyDouble()">+1 punto (50💰)</button><br><br>
+<button onclick="closeShop()">Chiudi</button>
+</div>
+
+<!-- CUSTOMIZE -->
+<div class="menu" id="custom">
 <h3>🎨 Customize</h3>
-
-<b>Vestiti</b><br>
-<button onclick="setClothes('none')">Nessuno</button>
-<button onclick="setClothes('shirt')">Maglietta</button>
-<button onclick="setClothes('vest')">Gilet</button>
-
-<br><br><b>Cappelli</b><br>
-<button onclick="setHat('none')">Nessuno</button>
-<button onclick="setHat('cap')">Cappellino</button>
-<button onclick="setHat('top')">Cappello alto</button>
-
-<br><br><b>Occhiali</b><br>
-<button onclick="setGlasses('none')">Nessuno</button>
-<button onclick="setGlasses('yes')">Occhiali</button>
-
-<br><br>
+<button onclick="setColor('cyan')">Cyan</button>
+<button onclick="setColor('red')">Rosso</button>
+<button onclick="setColor('lime')">Verde</button><br><br>
 <button onclick="closeCustomize()">Chiudi</button>
 </div>
 
 <script>
 let score=0;
 let rebirths=0;
+let coins=0;
+let goal=50;
+let power=1;
+let scale=1;
 
-function clickTriangle(){
-  score++;
-  document.getElementById("score").innerText=score;
-}
+const triangle=document.getElementById("triangle");
 
-function openCustomize(){
-  document.getElementById("customizeMenu").style.display="block";
-}
-function closeCustomize(){
-  document.getElementById("customizeMenu").style.display="none";
-}
+triangle.onclick=()=>{
+  score+=power;
+  coins=Math.min(500, coins+1);
 
-// VESTITI
-function setClothes(type){
-  shirt.style.display="none";
-  vest.style.display="none";
-  if(type==="shirt") shirt.style.display="block";
-  if(type==="vest") vest.style.display="block";
-}
+  scale+=0.02;
+  triangle.style.transform=`scale(${scale})`;
 
-// CAPPELLI
-function setHat(type){
-  cap.style.display="none";
-  topHat.style.display="none";
-  if(type==="cap") cap.style.display="block";
-  if(type==="top") topHat.style.display="block";
-}
+  if(score>=goal){
+    rebirths++;
+    score=0;
+    scale=1;
+    triangle.style.transform="scale(1)";
 
-// OCCHIALI
-function setGlasses(type){
-  glasses1.style.display="none";
-  glasses2.style.display="none";
-  bridge.style.display="none";
-  if(type==="yes"){
-    glasses1.style.display="block";
-    glasses2.style.display="block";
-    bridge.style.display="block";
+    goal=Math.min(1000, goal*2);
   }
+
+  update();
+};
+
+function update(){
+  scoreEl.innerText=score;
+  rebirthsEl.innerText=rebirths;
+  coinsEl.innerText=coins;
+  goalEl.innerText=goal;
+}
+
+const scoreEl=document.getElementById("score");
+const rebirthsEl=document.getElementById("rebirths");
+const coinsEl=document.getElementById("coins");
+const goalEl=document.getElementById("goal");
+
+function openShop(){ shop.style.display="block"; }
+function closeShop(){ shop.style.display="none"; }
+
+function buyDouble(){
+  if(coins>=50){
+    coins-=50;
+    power++;
+    update();
+  }
+}
+
+function openCustomize(){ custom.style.display="block"; }
+function closeCustomize(){ custom.style.display="none"; }
+
+function setColor(c){
+  triangle.style.borderBottomColor=c;
 }
 </script>
 
