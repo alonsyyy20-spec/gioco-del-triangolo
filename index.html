@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- BLOCCA ZOOM SU MOBILE / IPAD -->
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
@@ -27,20 +26,20 @@ html, body {
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 30px;
+  gap: 20px;
 }
 
-/* SHOP */
-#shop {
+/* SHOP + CUSTOMIZE */
+.panel {
   background: #222;
-  padding: 15px;
+  padding: 12px;
   border-radius: 10px;
   width: 200px;
 }
 
-#shop button {
+.panel button {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 6px;
   padding: 8px;
   border-radius: 6px;
   border: none;
@@ -58,14 +57,29 @@ html, body {
   -webkit-user-select: none;
 }
 
-/* FACCIA */
-#face {
+/* ACCESSORI */
+.accessory {
   position: absolute;
-  top: 45px;
-  left: -20px;
-  font-size: 28px;
   display: none;
   pointer-events: none;
+}
+
+#hat {
+  top: -40px;
+  left: -22px;
+  font-size: 32px;
+}
+
+#glasses {
+  top: 40px;
+  left: -18px;
+  font-size: 26px;
+}
+
+#vest {
+  top: 70px;
+  left: -22px;
+  font-size: 30px;
 }
 
 /* INFO */
@@ -86,43 +100,45 @@ html, body {
 <div id="game">
 
   <!-- SHOP -->
-  <div id="shop">
+  <div class="panel">
     <h3>🛒 Shop</h3>
     <p>💰 Soldi: <span id="money">0 / 500</span></p>
 
     <button onclick="buyCoins()">+1 moneta / click (10💰)</button>
     <button onclick="buyPoints()">+1 punto / click (20💰)</button>
-
-    <hr>
-
-    <button id="unlockBtn" onclick="unlockUpgrades()" disabled>
-      🔒 Sblocca upgrade (10 rinascite)
-    </button>
-
-    <button id="faceBtn" onclick="buyFace()" disabled>
-      😀 Metti faccia (100💰)
-    </button>
   </div>
 
   <!-- TRIANGOLO -->
   <div id="triangle">
-    <div id="face">😀</div>
+    <div id="hat" class="accessory">🎩</div>
+    <div id="glasses" class="accessory">😎</div>
+    <div id="vest" class="accessory">🦺</div>
+  </div>
+
+  <!-- CUSTOMIZE -->
+  <div class="panel">
+    <h3>🎨 Customize</h3>
+    <button onclick="toggleAccessory('hat')">Cappello</button>
+    <button onclick="toggleAccessory('glasses')">Occhiali</button>
+    <button onclick="toggleAccessory('vest')">Gilet</button>
   </div>
 
 </div>
 
-<!-- INFO -->
 <div id="info">
-  Punti: <span id="points">0</span><br>
+  Punti: <span id="points">0 / 1000</span><br>
   Rinascite: <span id="rebirths">0</span><br>
   Velocità: <span id="speed">1.0</span><br>
   Prossima rinascita: <span id="goal">50</span>
 </div>
 
 <script>
-/* ===== STATO GIOCO ===== */
+/* ===== STATO ===== */
 let size = 120;
+
 let points = 0;
+const maxPoints = 1000;
+
 let rebirths = 0;
 let speed = 1;
 
@@ -135,15 +151,11 @@ const maxMoney = 500;
 let coinsPerClick = 1;
 let pointsPerClick = 1;
 
-let upgradesUnlocked = false;
-let faceUnlocked = false;
-
 const triangle = document.getElementById("triangle");
-const face = document.getElementById("face");
 
 const colors = ["cyan", "yellow", "lime", "red", "orange", "pink", "violet"];
 
-/* ===== TRIANGOLO ===== */
+/* TRIANGOLO */
 function updateTriangle() {
   triangle.style.borderLeft = (size / 2) + "px solid transparent";
   triangle.style.borderRight = (size / 2) + "px solid transparent";
@@ -151,14 +163,17 @@ function updateTriangle() {
     size + "px solid " + colors[Math.floor(Math.random() * colors.length)];
 }
 
-/* ===== CLICK / TOUCH ===== */
+/* CLICK */
 triangle.addEventListener("touchstart", clickTriangle);
 triangle.addEventListener("click", clickTriangle);
 
 function clickTriangle(e) {
   e.preventDefault();
 
-  points += pointsPerClick;
+  if (points < maxPoints) {
+    points += pointsPerClick;
+    if (points > maxPoints) points = maxPoints;
+  }
 
   if (money < maxMoney) {
     money += coinsPerClick;
@@ -168,28 +183,23 @@ function clickTriangle(e) {
   size += speed;
   updateTriangle();
 
-  if (points >= rebirthGoal) {
-    rebirth();
-  }
+  if (points >= rebirthGoal) rebirth();
 
   updateUI();
 }
 
-/* ===== RINASCITA ===== */
+/* RINASCITA */
 function rebirth() {
   points = 0;
   size = 120;
   rebirths++;
-
   speed += 0.5;
 
   rebirthGoal *= 2;
-  if (rebirthGoal > maxRebirthGoal) {
-    rebirthGoal = maxRebirthGoal;
-  }
+  if (rebirthGoal > maxRebirthGoal) rebirthGoal = maxRebirthGoal;
 }
 
-/* ===== SHOP ===== */
+/* SHOP */
 function buyCoins() {
   if (money >= 10) {
     money -= 10;
@@ -204,33 +214,22 @@ function buyPoints() {
   }
 }
 
-function unlockUpgrades() {
-  if (rebirths >= 10) {
-    upgradesUnlocked = true;
-  }
+/* CUSTOMIZE */
+function toggleAccessory(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "block" ? "none" : "block";
 }
 
-function buyFace() {
-  if (money >= 100 && upgradesUnlocked && !faceUnlocked) {
-    money -= 100;
-    faceUnlocked = true;
-    face.style.display = "block";
-  }
-}
-
-/* ===== UI ===== */
+/* UI */
 function updateUI() {
-  document.getElementById("points").textContent = points;
+  document.getElementById("points").textContent = points + " / " + maxPoints;
   document.getElementById("rebirths").textContent = rebirths;
   document.getElementById("speed").textContent = speed.toFixed(1);
   document.getElementById("goal").textContent = rebirthGoal;
   document.getElementById("money").textContent = money + " / " + maxMoney;
-
-  document.getElementById("unlockBtn").disabled = rebirths < 10;
-  document.getElementById("faceBtn").disabled = !upgradesUnlocked;
 }
 
-/* ===== START ===== */
+/* START */
 updateTriangle();
 updateUI();
 </script>
