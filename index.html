@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 <title>Gioco 🔺</title>
 
 <style>
-* { touch-action: manipulation; box-sizing: border-box; }
+* { box-sizing: border-box; touch-action: manipulation; }
 
 body {
   margin: 0;
@@ -30,7 +29,7 @@ body {
   background: #222;
   padding: 12px;
   border-radius: 10px;
-  width: 180px;
+  width: 190px;
 }
 
 button {
@@ -42,106 +41,58 @@ button {
   font-size: 14px;
 }
 
-/* ===== TRIANGOLO ===== */
-#triangle {
+/* ===== PERSONAGGIO ===== */
+#character {
   position: relative;
+  width: 160px;
+  height: 160px;
+  cursor: pointer;
+}
+
+/* FORME */
+.shape {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+#triangle {
   width: 0;
   height: 0;
+  margin: auto;
   border-left: 80px solid transparent;
   border-right: 80px solid transparent;
   border-bottom: 160px solid cyan;
 }
 
-/* ===== DISEGNI ===== */
+#square { background: cyan; }
+#circle { background: cyan; border-radius: 50%; }
 
-/* Vestiti */
-.clothes {
-  position: absolute;
-  top: 80px;
-  left: -40px;
-  width: 80px;
-  height: 50px;
-  display: none;
+#pentagon {
+  background: cyan;
+  clip-path: polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
 }
-#gilet { background: #444; }
-#shirt { background: #1976d2; }
-#jacket { background: #6a1b9a; }
-
-/* Cappelli */
-.hat {
-  position: absolute;
-  top: -35px;
-  left: -35px;
-  width: 70px;
-  height: 20px;
-  display: none;
-}
-#hat1 { background: #333; }
-#hat2 { background: #795548; }
-#hat3 { background: #263238; }
-
-/* Occhiali */
-.glasses {
-  position: absolute;
-  top: 55px;
-  left: -35px;
-  width: 70px;
-  height: 20px;
-  display: none;
-}
-.glasses::before,
-.glasses::after {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border: 2px solid black;
-  border-radius: 50%;
-  top: 0;
-}
-.glasses::before { left: 0; }
-.glasses::after { right: 0; }
-
-/* Faccia */
-.eye {
-  position: absolute;
-  top: 45px;
-  width: 6px;
-  height: 6px;y
-  background: black;
-  border-radius: 50%;
-}
-#eyeL { left: -15px; }
-#eyeR { left: 9px; }
-
-#mouth {
-  position: absolute;
-  top: 60px;
-  left: -8px;
-  width: 16px;
-  height: 8px;
-  border-bottom: 2px solid black;
-  display: none;
+#hexagon {
+  background: cyan;
+  clip-path: polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
 }
 
-/* ===== CUSTOMIZE MENU ===== */
-#customize {
+/* ===== MENU ===== */
+.overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,.7);
   display: none;
   justify-content: center;
   align-items: center;
 }
 
-#customizeBox {
+.box {
   background: #222;
   padding: 16px;
   border-radius: 12px;
   width: 260px;
 }
-
-h4 { margin-bottom: 4px; margin-top: 10px; }
 </style>
 </head>
 
@@ -149,93 +100,93 @@ h4 { margin-bottom: 4px; margin-top: 10px; }
 
 <div id="game">
 
-  <!-- SHOP -->
+  <!-- SHOP BASE -->
   <div class="panel">
-    <h3>🎮 Gioco</h3>
-    💰 <span id="money">0</span><br>
-    Punti: <span id="points">0</span><br>
-    Rinascite: <span id="rebirths">0</span>
+    <h3>🛒 Shop</h3>
+    💰 Soldi: <span id="money">0</span><br>
+    🔁 Rinascite: <span id="rebirths">0</span>
     <button onclick="openCustomize()">🎨 Customize</button>
+    <button onclick="openSpecialMenu()">⭐ Menu Speciale</button>
   </div>
 
-  <!-- TRIANGOLO -->
-  <div id="triangle">
-    <!-- Vestiti -->
-    <div id="gilet" class="clothes"></div>
-    <div id="shirt" class="clothes"></div>
-    <div id="jacket" class="clothes"></div>
-
-    <!-- Cappelli -->
-    <div id="hat1" class="hat"></div>
-    <div id="hat2" class="hat"></div>
-    <div id="hat3" class="hat"></div>
-
-    <!-- Occhiali -->
-    <div id="gl1" class="glasses"></div>
-
-    <!-- Faccia -->
-    <div id="eyeL" class="eye"></div>
-    <div id="eyeR" class="eye"></div>
-    <div id="mouth"></div>
+  <!-- PERSONAGGIO -->
+  <div id="character">
+    <div id="triangle" class="shape"></div>
+    <div id="square" class="shape"></div>
+    <div id="circle" class="shape"></div>
+    <div id="pentagon" class="shape"></div>
+    <div id="hexagon" class="shape"></div>
   </div>
 
 </div>
 
 <!-- CUSTOMIZE -->
-<div id="customize">
-  <div id="customizeBox">
-
+<div id="customize" class="overlay">
+  <div class="box">
     <h3>🎨 Customize</h3>
-
-    <h4>Vestiti</h4>
-    <button onclick="setClothes('gilet')">Gilet</button>
-    <button onclick="setClothes('shirt')">Maglietta</button>
-    <button onclick="setClothes('jacket')">Camicia</button>
-
-    <h4>Cappelli</h4>
-    <button onclick="setHat('hat1')">Cappello</button>
-    <button onclick="setHat('hat2')">Cappello ragazzo</button>
-    <button onclick="setHat('hat3')">Altro</button>
-
-    <h4>Occhiali</h4>
-    <button onclick="toggleGlasses()">Occhiali</button>
-
-    <h4>Faccia</h4>
-    <button onclick="setMouth()">Bocca</button>
-
+    <p>(resta tutto com’è, gratis)</p>
     <button onclick="closeCustomize()">Chiudi</button>
   </div>
 </div>
 
+<!-- MENU SPECIALE -->
+<div id="specialMenu" class="overlay">
+  <div class="box">
+    <h3>⭐ Menu Speciale</h3>
+
+    <div id="lockedText">
+      🔒 Sblocca con 5 rinascite
+    </div>
+
+    <div id="specialContent" style="display:none">
+      <h4>Forma</h4>
+      <button onclick="setShape('triangle')">Triangolo</button>
+      <button onclick="setShape('square')">Quadrato</button>
+      <button onclick="setShape('circle')">Cerchio</button>
+      <button onclick="setShape('pentagon')">Pentagono</button>
+      <button onclick="setShape('hexagon')">Esagono</button>
+
+      <h4>Sfondo</h4>
+      <button onclick="setBg('#111')">Scuro</button>
+      <button onclick="setBg('#0d47a1')">Blu</button>
+      <button onclick="setBg('#4a148c')">Viola</button>
+      <button onclick="setBg('#1b5e20')">Verde</button>
+    </div>
+
+    <button onclick="closeSpecialMenu()">Chiudi</button>
+  </div>
+</div>
+
 <script>
-let points = 0;
 let money = 0;
 let rebirths = 0;
-let rebirthGoal = 50;
-const MAX_GOAL = 1000;
 
-/* CLICK */
-document.getElementById("triangle").addEventListener("pointerdown", e => {
+/* FORMA BASE */
+setShape("triangle");
+
+/* CLICK SUL PERSONAGGIO */
+document.getElementById("character").addEventListener("pointerdown", e => {
   e.preventDefault();
-  points++;
   money++;
-  if (points >= rebirthGoal) doRebirth();
+  if (money % 50 === 0) rebirths++;
   updateUI();
 });
 
-/* RINASCITA */
-function doRebirth() {
-  points = 0;
-  rebirths++;
-  rebirthGoal *= 2;
-  if (rebirthGoal > MAX_GOAL) rebirthGoal = MAX_GOAL;
-}
-
 /* UI */
 function updateUI() {
-  document.getElementById("points").textContent = points;
   document.getElementById("money").textContent = money;
   document.getElementById("rebirths").textContent = rebirths;
+}
+
+/* FORME */
+function setShape(id) {
+  document.querySelectorAll(".shape").forEach(s => s.style.display = "none");
+  document.getElementById(id).style.display = "block";
+}
+
+/* SFONDO */
+function setBg(color) {
+  document.body.style.background = color;
 }
 
 /* CUSTOMIZE */
@@ -246,29 +197,16 @@ function closeCustomize() {
   document.getElementById("customize").style.display = "none";
 }
 
-/* SELEZIONI */
-function hideAll(cls) {
-  document.querySelectorAll(cls).forEach(e => e.style.display = "none");
+/* MENU SPECIALE */
+function openSpecialMenu() {
+  document.getElementById("specialMenu").style.display = "flex";
+  if (rebirths >= 5) {
+    document.getElementById("lockedText").style.display = "none";
+    document.getElementById("specialContent").style.display = "block";
+  }
 }
-
-function setClothes(id) {
-  hideAll(".clothes");
-  document.getElementById(id).style.display = "block";
-}
-
-function setHat(id) {
-  hideAll(".hat");
-  document.getElementById(id).style.display = "block";
-}
-
-function toggleGlasses() {
-  const g = document.getElementById("gl1");
-  g.style.display = g.style.display === "block" ? "none" : "block";
-}
-
-function setMouth() {
-  const m = document.getElementById("mouth");
-  m.style.display = m.style.display === "block" ? "none" : "block";
+function closeSpecialMenu() {
+  document.getElementById("specialMenu").style.display = "none";
 }
 
 updateUI();
