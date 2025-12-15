@@ -2,13 +2,10 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-
-    <!-- 🔥 COSA NUOVA 1: viewport (fondamentale per mobile) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>Gioco del Triangolo</title>
 
-    <!-- 🔥 CSS COMPLETO -->
     <style>
         * {
             box-sizing: border-box;
@@ -41,7 +38,6 @@
             line-height: 1.4;
         }
 
-        /* 🔥 COSA NUOVA 2: canvas responsivo */
         canvas {
             width: 90vw;
             max-width: 420px;
@@ -77,24 +73,34 @@
         let speed = 1;
         let autoGrow = 0.02;
 
+        // 🎨 COLORE TRIANGOLO
+        let triangleColor = "cyan";
+
+        function randomColor() {
+            return `hsl(${Math.random() * 360}, 100%, 60%)`;
+        }
+
         function drawTriangle() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = "cyan";
+            const center = canvas.width / 2;
+
+            ctx.fillStyle = triangleColor;
             ctx.beginPath();
-            ctx.moveTo(200, 200 - size);
-            ctx.lineTo(200 - size, 200 + size);
-            ctx.lineTo(200 + size, 200 + size);
+            ctx.moveTo(center, center - size);
+            ctx.lineTo(center - size, center + size);
+            ctx.lineTo(center + size, center + size);
             ctx.closePath();
             ctx.fill();
         }
 
         function isClickInsideTriangle(x, y) {
+            const center = canvas.width / 2;
             return (
-                x > 200 - size &&
-                x < 200 + size &&
-                y > 200 - size &&
-                y < 200 + size
+                x > center - size &&
+                x < center + size &&
+                y > center - size &&
+                y < center + size
             );
         }
 
@@ -114,6 +120,7 @@
             const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
             if (isClickInsideTriangle(x, y)) {
+                triangleColor = randomColor(); // 🎨 cambia colore
                 score++;
                 size += 1 * speed;
 
