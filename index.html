@@ -1,147 +1,188 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Gioco del Triangolo</title>
+<title>Gioco del Triangolo</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: #111;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+h1 { margin-bottom: 8px; }
 
-            -webkit-text-size-adjust: 100%;
-        }
+.stats {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
 
-        h1 {
-            font-size: clamp(24px, 6vw, 40px);
-            margin-bottom: 10px;
-        }
+canvas {
+    width: 90vw;
+    max-width: 420px;
+    aspect-ratio: 1 / 1;
+    background: #222;
+    border-radius: 12px;
+    cursor: pointer;
+}
 
-        .stats {
-            font-size: clamp(14px, 4vw, 20px);
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
+button {
+    margin: 6px;
+    padding: 10px 16px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
 
-        canvas {
-            width: 90vw;
-            max-width: 420px;
-            aspect-ratio: 1 / 1;
-            background: #222;
-            border-radius: 12px;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-    </style>
+.shop {
+    display: none;
+    background: #1c1c1c;
+    padding: 12px;
+    border-radius: 12px;
+    max-width: 420px;
+}
+</style>
 </head>
 
 <body>
 
-    <h1>🔺 Gioco del Triangolo</h1>
+<h1>🔺 Triangle Clicker</h1>
 
-    <div class="stats">
-        Punteggio: <span id="score">0</span><br>
-        Rinascite: <span id="rebirths">0</span><br>
-        Velocità: <span id="speed">1</span>x
-    </div>
+<div class="stats">
+    Click: <span id="clicks">0</span> / 50<br>
+    Rinascite: <span id="rebirths">0</span><br>
+    Velocità: <span id="speed">1</span>x<br>
+    💰 Monete: <span id="coins">0</span>
+</div>
 
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
 
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+<button onclick="toggleShop()">🛒 SHOP</button>
 
-        let size = 40;
-        let score = 0;
-        let rebirths = 0;
+<div class="shop" id="shop">
+    <h3>SHOP</h3>
 
-        let speed = 1;
-        let autoGrow = 0.02;
+    <button onclick="buyDoubleCoins()">
+        💰 +1 moneta per click<br>
+        Costo: <span id="costCoins">50</span>
+    </button><br><br>
 
-        // 🎨 COLORE TRIANGOLO
-        let triangleColor = "cyan";
+    <button onclick="buyExtraClick()">
+        ⚡ +1 click extra per rinascita<br>
+        Costo: <span id="costClick">100</span>
+    </button>
+</div>
 
-        function randomColor() {
-            return `hsl(${Math.random() * 360}, 100%, 60%)`;
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let size = 40;
+let triangleColor = "cyan";
+
+let clicks = 0;
+let clicksToRebirth = 50;
+let rebirths = 0;
+
+let speed = 1;
+
+let coins = 0;
+let coinsPerClick = 1;
+let clickMultiplier = 1;
+
+let costCoins = 50;
+let costClick = 100;
+
+function randomColor() {
+    return `hsl(${Math.random() * 360},100%,60%)`;
+}
+
+function drawTriangle() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const c = canvas.width / 2;
+
+    ctx.fillStyle = triangleColor;
+    ctx.beginPath();
+    ctx.moveTo(c, c - size);
+    ctx.lineTo(c - size, c + size);
+    ctx.lineTo(c + size, c + size);
+    ctx.closePath();
+    ctx.fill();
+}
+
+canvas.addEventListener("click", e => {
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) * (canvas.width / r.width);
+    const y = (e.clientY - r.top) * (canvas.height / r.height);
+
+    const c = canvas.width / 2;
+    if (x > c - size && x < c + size && y > c - size && y < c + size) {
+        triangleColor = randomColor();
+        clicks += clickMultiplier;
+        coins += coinsPerClick;
+        size += speed;
+
+        if (clicks >= clicksToRebirth) {
+            doRebirth();
         }
 
-        function drawTriangle() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updateUI();
+    }
+});
 
-            const center = canvas.width / 2;
+function doRebirth() {
+    rebirths++;
+    clicks = 0;
+    size = 40;
+    speed += 0.5; // 🔥 sempre più veloce
+}
 
-            ctx.fillStyle = triangleColor;
-            ctx.beginPath();
-            ctx.moveTo(center, center - size);
-            ctx.lineTo(center - size, center + size);
-            ctx.lineTo(center + size, center + size);
-            ctx.closePath();
-            ctx.fill();
-        }
+function toggleShop() {
+    const s = document.getElementById("shop");
+    s.style.display = s.style.display === "none" ? "block" : "none";
+}
 
-        function isClickInsideTriangle(x, y) {
-            const center = canvas.width / 2;
-            return (
-                x > center - size &&
-                x < center + size &&
-                y > center - size &&
-                y < center + size
-            );
-        }
+function buyDoubleCoins() {
+    if (coins >= costCoins) {
+        coins -= costCoins;
+        coinsPerClick++;
+        costCoins = Math.floor(costCoins * 1.6);
+        updateUI();
+    }
+}
 
-        function rebirth() {
-            rebirths++;
-            size = 40;
-            speed += 0.5;
-            autoGrow += 0.01;
+function buyExtraClick() {
+    if (coins >= costClick) {
+        coins -= costClick;
+        clickMultiplier++;
+        costClick = Math.floor(costClick * 1.7);
+        updateUI();
+    }
+}
 
-            document.getElementById("rebirths").textContent = rebirths;
-            document.getElementById("speed").textContent = speed.toFixed(1);
-        }
+function updateUI() {
+    document.getElementById("clicks").textContent = clicks;
+    document.getElementById("rebirths").textContent = rebirths;
+    document.getElementById("speed").textContent = speed.toFixed(1);
+    document.getElementById("coins").textContent = coins;
+    document.getElementById("costCoins").textContent = costCoins;
+    document.getElementById("costClick").textContent = costClick;
+}
 
-        canvas.addEventListener("click", (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-            if (isClickInsideTriangle(x, y)) {
-                triangleColor = randomColor(); // 🎨 cambia colore
-                score++;
-                size += 1 * speed;
-
-                if (score % 100 === 0) {
-                    rebirth();
-                }
-
-                document.getElementById("score").textContent = score;
-                drawTriangle();
-            }
-        });
-
-        function gameLoop() {
-            size += autoGrow * speed;
-            drawTriangle();
-            requestAnimationFrame(gameLoop);
-        }
-
-        drawTriangle();
-        gameLoop();
-    </script>
+drawTriangle();
+</script>
 
 </body>
 </html>
