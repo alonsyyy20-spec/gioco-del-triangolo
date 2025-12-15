@@ -2,96 +2,95 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <title>Gioco 🔺</title>
 
 <style>
-* { box-sizing: border-box; touch-action: manipulation; }
-
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background: #111;
   color: white;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
+  touch-action: manipulation;
 }
 
 #game {
   display: flex;
-  height: 100vh;
   align-items: center;
   justify-content: center;
+  height: 100%;
   gap: 20px;
 }
 
-/* ===== PANNELLI ===== */
+/* SHOP + CUSTOMIZE */
 .panel {
   background: #222;
   padding: 12px;
   border-radius: 10px;
-  width: 190px;
+  width: 200px;
 }
 
-button {
+.panel button {
   width: 100%;
-  padding: 8px;
   margin-top: 6px;
+  padding: 8px;
   border-radius: 6px;
   border: none;
-  font-size: 14px;
 }
 
-/* ===== PERSONAGGIO ===== */
-#character {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  cursor: pointer;
-}
-
-/* FORME */
-.shape {
-  position: absolute;
-  inset: 0;
-  display: none;
-}
-
+/* TRIANGOLO */
 #triangle {
+  position: relative;
   width: 0;
   height: 0;
-  margin: auto;
-  border-left: 80px solid transparent;
-  border-right: 80px solid transparent;
-  border-bottom: 160px solid cyan;
+  border-left: 60px solid transparent;
+  border-right: 60px solid transparent;
+  border-bottom: 120px solid cyan;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-#square { background: cyan; }
-#circle { background: cyan; border-radius: 50%; }
-
-#pentagon {
-  background: cyan;
-  clip-path: polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
-}
-#hexagon {
-  background: cyan;
-  clip-path: polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
-}
-
-/* ===== MENU ===== */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.7);
+/* ACCESSORI */
+.accessory {
+  position: absolute;
   display: none;
-  justify-content: center;
-  align-items: center;
+  pointer-events: none;
 }
 
-.box {
+#hat {
+  top: -40px;
+  left: -22px;
+  font-size: 32px;
+}
+
+#glasses {
+  top: 40px;
+  left: -18px;
+  font-size: 26px;
+}
+
+#vest {
+  top: 70px;
+  left: -22px;
+  font-size: 30px;
+}
+
+/* INFO */
+#info {
+  position: fixed;
+  top: 10px;
+  right: 10px;
   background: #222;
-  padding: 16px;
-  border-radius: 12px;
-  width: 260px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
 }
 </style>
 </head>
@@ -100,115 +99,138 @@ button {
 
 <div id="game">
 
-  <!-- SHOP BASE -->
+  <!-- SHOP -->
   <div class="panel">
     <h3>🛒 Shop</h3>
-    💰 Soldi: <span id="money">0</span><br>
-    🔁 Rinascite: <span id="rebirths">0</span>
-    <button onclick="openCustomize()">🎨 Customize</button>
-    <button onclick="openSpecialMenu()">⭐ Menu Speciale</button>
+    <p>💰 Soldi: <span id="money">0 / 500</span></p>
+
+    <button onclick="buyCoins()">+1 moneta / click (10💰)</button>
+    <button onclick="buyPoints()">+1 punto / click (20💰)</button>
   </div>
 
-  <!-- PERSONAGGIO -->
-  <div id="character">
-    <div id="triangle" class="shape"></div>
-    <div id="square" class="shape"></div>
-    <div id="circle" class="shape"></div>
-    <div id="pentagon" class="shape"></div>
-    <div id="hexagon" class="shape"></div>
+  <!-- TRIANGOLO -->
+  <div id="triangle">
+    <div id="hat" class="accessory">🎩</div>
+    <div id="glasses" class="accessory">😎</div>
+    <div id="vest" class="accessory">🦺</div>
   </div>
 
-</div>
-
-<!-- CUSTOMIZE -->
-<div id="customize" class="overlay">
-  <div class="box">
+  <!-- CUSTOMIZE -->
+  <div class="panel">
     <h3>🎨 Customize</h3>
-    <p>(resta tutto com’è, gratis)</p>
-    <button onclick="closeCustomize()">Chiudi</button>
+    <button onclick="toggleAccessory('hat')">Cappello</button>
+    <button onclick="toggleAccessory('glasses')">Occhiali</button>
+    <button onclick="toggleAccessory('vest')">Gilet</button>
   </div>
+
 </div>
 
-<!-- MENU SPECIALE -->
-<div id="specialMenu" class="overlay">
-  <div class="box">
-    <h3>⭐ Menu Speciale</h3>
-
-    <div id="lockedText">
-      🔒 Sblocca con 5 rinascite
-    </div>
-
-    <div id="specialContent" style="display:none">
-      <h4>Forma</h4>
-      <button onclick="setShape('triangle')">Triangolo</button>
-      <button onclick="setShape('square')">Quadrato</button>
-      <button onclick="setShape('circle')">Cerchio</button>
-      <button onclick="setShape('pentagon')">Pentagono</button>
-      <button onclick="setShape('hexagon')">Esagono</button>
-
-      <h4>Sfondo</h4>
-      <button onclick="setBg('#111')">Scuro</button>
-      <button onclick="setBg('#0d47a1')">Blu</button>
-      <button onclick="setBg('#4a148c')">Viola</button>
-      <button onclick="setBg('#1b5e20')">Verde</button>
-    </div>
-
-    <button onclick="closeSpecialMenu()">Chiudi</button>
-  </div>
+<div id="info">
+  Punti: <span id="points">0 / 1000</span><br>
+  Rinascite: <span id="rebirths">0</span><br>
+  Velocità: <span id="speed">1.0</span><br>
+  Prossima rinascita: <span id="goal">50</span>
 </div>
 
 <script>
-let money = 0;
+/* ===== STATO ===== */
+let size = 120;
+
+let points = 0;
+const maxPoints = 1000;
+
 let rebirths = 0;
+let speed = 1;
 
-/* FORMA BASE */
-setShape("triangle");
+let rebirthGoal = 50;
+const maxRebirthGoal = 1000;
 
-/* CLICK SUL PERSONAGGIO */
-document.getElementById("character").addEventListener("pointerdown", e => {
+let money = 0;
+const maxMoney = 500;
+
+let coinsPerClick = 1;
+let pointsPerClick = 1;
+
+const triangle = document.getElementById("triangle");
+
+const colors = ["cyan", "yellow", "lime", "red", "orange", "pink", "violet"];
+
+/* TRIANGOLO */
+function updateTriangle() {
+  triangle.style.borderLeft = (size / 2) + "px solid transparent";
+  triangle.style.borderRight = (size / 2) + "px solid transparent";
+  triangle.style.borderBottom =
+    size + "px solid " + colors[Math.floor(Math.random() * colors.length)];
+}
+
+/* CLICK */
+triangle.addEventListener("touchstart", clickTriangle);
+triangle.addEventListener("click", clickTriangle);
+
+function clickTriangle(e) {
   e.preventDefault();
-  money++;
-  if (money % 50 === 0) rebirths++;
+
+  if (points < maxPoints) {
+    points += pointsPerClick;
+    if (points > maxPoints) points = maxPoints;
+  }
+
+  if (money < maxMoney) {
+    money += coinsPerClick;
+    if (money > maxMoney) money = maxMoney;
+  }
+
+  size += speed;
+  updateTriangle();
+
+  if (points >= rebirthGoal) rebirth();
+
   updateUI();
-});
-
-/* UI */
-function updateUI() {
-  document.getElementById("money").textContent = money;
-  document.getElementById("rebirths").textContent = rebirths;
 }
 
-/* FORME */
-function setShape(id) {
-  document.querySelectorAll(".shape").forEach(s => s.style.display = "none");
-  document.getElementById(id).style.display = "block";
+/* RINASCITA */
+function rebirth() {
+  points = 0;
+  size = 120;
+  rebirths++;
+  speed += 0.5;
+
+  rebirthGoal *= 2;
+  if (rebirthGoal > maxRebirthGoal) rebirthGoal = maxRebirthGoal;
 }
 
-/* SFONDO */
-function setBg(color) {
-  document.body.style.background = color;
+/* SHOP */
+function buyCoins() {
+  if (money >= 10) {
+    money -= 10;
+    coinsPerClick++;
+  }
+}
+
+function buyPoints() {
+  if (money >= 20) {
+    money -= 20;
+    pointsPerClick++;
+  }
 }
 
 /* CUSTOMIZE */
-function openCustomize() {
-  document.getElementById("customize").style.display = "flex";
-}
-function closeCustomize() {
-  document.getElementById("customize").style.display = "none";
+function toggleAccessory(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "block" ? "none" : "block";
 }
 
-/* MENU SPECIALE */
-function openSpecialMenu() {
-  document.getElementById("specialMenu").style.display = "flex";
-  if (rebirths >= 5) {
-    document.getElementById("lockedText").style.display = "none";
-    document.getElementById("specialContent").style.display = "block";
-  }
-}
-function closeSpecialMenu() {
-  document.getElementById("specialMenu").style.display = "none";
+/* UI */
+function updateUI() {
+  document.getElementById("points").textContent = points + " / " + maxPoints;
+  document.getElementById("rebirths").textContent = rebirths;
+  document.getElementById("speed").textContent = speed.toFixed(1);
+  document.getElementById("goal").textContent = rebirthGoal;
+  document.getElementById("money").textContent = money + " / " + maxMoney;
 }
 
+/* START */
+updateTriangle();
 updateUI();
 </script>
 
